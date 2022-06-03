@@ -5,8 +5,8 @@ import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 public class AnimationClass {
-    Texture texture;
-    Animation<TextureRegion> animation;
+    private final Texture texture;
+    private final Animation<TextureRegion> animation;
     private float time;
 
     public AnimationClass(String name, int width, int height, float fps, Animation.PlayMode mode) {
