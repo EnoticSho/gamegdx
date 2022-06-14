@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.MapObjects;
@@ -23,6 +24,7 @@ import java.util.List;
 
 public class MyGdxGame extends ApplicationAdapter {
     private SpriteBatch batch;
+    private ShapeRenderer renderer;
     private Label label;
     private AnimationClass runMan;
     private Texture img;
@@ -30,21 +32,30 @@ public class MyGdxGame extends ApplicationAdapter {
     private OrthogonalTiledMapRenderer mapRenderer;
     private OrthographicCamera camera;
     private final List<Coin> coinList = new ArrayList<>();
+    private Texture fon;
+
+    private int[] foreGround, backGround;
 
 
     @Override
     public void create() {
-        map = new TmxMapLoader().load("map2/test.tmx");
+        fon = new Texture("fon.png");
+        map = new TmxMapLoader().load("maps/map1.tmx");
         mapRenderer = new OrthogonalTiledMapRenderer(map);
-
         batch = new SpriteBatch();
+        renderer = new ShapeRenderer();
         runMan = new AnimationClass("runRight.png", 8, 1, 16, Animation.PlayMode.LOOP);
         label = new Label(36);
         camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        RectangleMapObject o = (RectangleMapObject) map.getLayers().get("camera").getObjects().get("camera");
+        RectangleMapObject o = (RectangleMapObject) map.getLayers().get("Слой объектов 1").getObjects().get("camera");
         camera.position.x = o.getRectangle().x;
         camera.position.y = o.getRectangle().y;
         camera.update();
+
+        foreGround = new int[1];
+        foreGround[0] = map.getLayers().getIndex("Слой тайлов 2");
+        backGround = new int[1];
+        backGround[0] = map.getLayers().getIndex("Слой тайлов 1");
 
         MapLayer ml = map.getLayers().get("монетки");
         if (ml != null) {
@@ -80,8 +91,12 @@ public class MyGdxGame extends ApplicationAdapter {
         }
         camera.update();
 
+        batch.begin();
+        batch.draw(fon, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        batch.end();
+
         mapRenderer.setView(camera);
-        mapRenderer.render();
+        mapRenderer.render(backGround);
 
         runMan.step(Gdx.graphics.getDeltaTime());
 
@@ -91,6 +106,11 @@ public class MyGdxGame extends ApplicationAdapter {
             coin.draw(batch, camera);
         }
         batch.end();
+
+        mapRenderer.render(foreGround);
+
+        renderer.begin(ShapeRenderer.ShapeType.Line);
+        renderer.circle(Gdx.graphics.getWidth()/2, Gdx.graphics.getHeight()/2, Gdx.graphics.getHeight()/3);
     }
 
     @Override
