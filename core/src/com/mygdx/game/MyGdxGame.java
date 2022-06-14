@@ -3,6 +3,7 @@ package com.mygdx.game;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
@@ -19,12 +20,12 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.ScreenUtils;
 
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
 public class MyGdxGame extends ApplicationAdapter {
     private SpriteBatch batch;
-    private ShapeRenderer renderer;
     private Label label;
     private AnimationClass runMan;
     private Texture img;
@@ -33,8 +34,11 @@ public class MyGdxGame extends ApplicationAdapter {
     private OrthographicCamera camera;
     private final List<Coin> coinList = new ArrayList<>();
     private Texture fon;
+    private Rectangle heroRect;
 
     private int[] foreGround, backGround;
+
+    private int score;
 
 
     @Override
@@ -42,12 +46,15 @@ public class MyGdxGame extends ApplicationAdapter {
         fon = new Texture("fon.png");
         map = new TmxMapLoader().load("maps/map1.tmx");
         mapRenderer = new OrthogonalTiledMapRenderer(map);
+        label = new Label(30);
+
         batch = new SpriteBatch();
-        renderer = new ShapeRenderer();
+
         runMan = new AnimationClass("runRight.png", 8, 1, 16, Animation.PlayMode.LOOP);
-        label = new Label(36);
+        heroRect = new Rectangle(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() / 2, runMan.getTexture().getRegionWidth(), runMan.getTexture().getRegionHeight());
+
         camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        RectangleMapObject o = (RectangleMapObject) map.getLayers().get("Слой объектов 1").getObjects().get("camera");
+        RectangleMapObject o = (RectangleMapObject) map.getLayers().get("Слой объектов 2").getObjects().get("camera");
         camera.position.x = o.getRectangle().x;
         camera.position.y = o.getRectangle().y;
         camera.update();
@@ -57,7 +64,7 @@ public class MyGdxGame extends ApplicationAdapter {
         backGround = new int[1];
         backGround[0] = map.getLayers().getIndex("Слой тайлов 1");
 
-        MapLayer ml = map.getLayers().get("монетки");
+        MapLayer ml = map.getLayers().get("coins");
         if (ml != null) {
             MapObjects mo = ml.getObjects();
             if (mo.getCount() > 0) {
@@ -102,15 +109,16 @@ public class MyGdxGame extends ApplicationAdapter {
 
         batch.begin();
         batch.draw(runMan.getTexture(), Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() / 2);
+        label.draw(batch, "монеток собрано " + String.valueOf(score), 0, 0);
         for (Coin coin : coinList) {
             coin.draw(batch, camera);
+            if (coin.isOverlaps(heroRect, camera)) {
+                score++;
+//                coinList.remove(coin);
+            }
         }
         batch.end();
-
         mapRenderer.render(foreGround);
-
-        renderer.begin(ShapeRenderer.ShapeType.Line);
-        renderer.circle(Gdx.graphics.getWidth()/2, Gdx.graphics.getHeight()/2, Gdx.graphics.getHeight()/3);
     }
 
     @Override
